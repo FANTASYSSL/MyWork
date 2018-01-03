@@ -12,6 +12,9 @@
 						http://www.springframework.org/schema/aop/spring-aop.xsd
 						http://www.springframework.org/schema/tx 
 						http://www.springframework.org/schema/tx/spring-tx.xsd">
+	<!-- 组件扫描 -->
+	<context:component-scan base-package="com.wch"/>
+	
 	<!-- 加载属性文件 -->
 	<context:property-placeholder location="classpath:db.properties"/>
 				
@@ -23,33 +26,22 @@
 		<property name="password" value="${jdbc.password}"/>
 	</bean>
 		
-	<!-- 配置LocalSessionFactoryBean，spring提供的用于整合hibernate的工厂bean -->
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+	<!-- 配置spring提供的用于整合mybatis的工厂bean -->
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource"/>
-		<!-- 注入hibernate相关的属性配置 -->
-		<property name="hibernateProperties">
-			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
-				<prop key="hibernate.hbm2ddl.auto">update</prop>
-				<prop key="hibernate.show_sql">true</prop>
-				<prop key="hibernate.format_sql">true</prop>
-			</props>
-		</property>
-		<!-- 注入hibernate的映射文件 -->
-		<property name="mappingLocations">
-			<list>
-				<value>classpath:com/wch/bos/domain/*.xml</value>
-			</list>
-		</property>
+		<property name="mapperLocations" value="classpath:com/wch/mapper/*.xml" />
+	</bean>
+	
+	<!-- DAO接口所在包名，Spring会自动查找其下的类 --> 
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.wch.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sessionFactory" />
 	</bean>
 	
 	<!-- 配置事务管理器 -->
-	<bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory"/>
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
 	</bean>
-	
-	<!-- 组件扫描 -->
-	<context:component-scan base-package="com.wch.bos"/>
 	
 	<!-- 支持spring注解 -->
 	<context:annotation-config/>
